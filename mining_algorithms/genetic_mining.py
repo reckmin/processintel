@@ -171,30 +171,47 @@ class GeneticMining(BaseMining):
         all_activities = ['start'] + list(self.filtered_events) + ['end']
         activity_idx = {a: i for i, a in enumerate(all_activities)}
         n = len(all_activities)
+        start = activity_idx['start']
+        end = activity_idx['end']
 
         follows = np.zeros((n, n), dtype=np.int32)
         L1L = np.zeros(n, dtype=np.int32)
         L2L = np.zeros((n, n), dtype=np.int32)
 
-        # Count over all traces
+        filtered_positions = self.filtered_event_positions #reusing mapping in BaseMining
+        filtered_matrix = self.filtered_succession_matrix
+        for a in self.filtered_events:
+            idx_a = activity_idx[a]
+            pos_a = filtered_positions.get(a)
+            if pos_a is None:
+                continue
+            for b in self.filtered_events:
+                pos_b = filtered_positions.get(b)
+                if pos_b is None:
+                    continue
+                follows[idx_a, activity_idx[b]] = int(filtered_matrix[pos_a, pos_b])
+            L1L[idx_a] = int(filtered_matrix[pos_a, pos_a])
+
+        # Count over all traces (only needed for start/end edges and L2L)
         for trace in self.node_frequency_filtered_log:
             # Add virtual start and end activities to each trace
             extended_trace = ['start'] + list(trace) + ['end']
             idx = np.fromiter((activity_idx[x] for x in extended_trace), count=len(extended_trace), dtype=np.int32)
 
-            # follows and L1L
             if idx.size >= 2:
                 a, b = idx[:-1], idx[1:]
-                np.add.at(follows, (a, b), 1)
-                np.add.at(L1L, a[a == b], 1)
+                start_mask = (a == start)
+                if start_mask.any():
+                    np.add.at(follows, (a[start_mask], b[start_mask]), 1)
+                end_mask = (b == end)
+                if end_mask.any():
+                    np.add.at(follows, (a[end_mask], b[end_mask]), 1)
 
             # L2L
             if idx.size >= 3:
                 a, b, c = idx[:-2], idx[1:-1], idx[2:]
                 mask = (a == c) & (a != b)
                 np.add.at(L2L, (a[mask], b[mask]), 1)
-
-        start, end = activity_idx['start'], activity_idx['end']
 
         # Initialize dependency matrix and start/end measures for all activity pairs
         for a in self.filtered_events:
