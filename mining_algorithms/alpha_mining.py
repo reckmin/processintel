@@ -1,6 +1,7 @@
 import itertools
 
-from graphs.visualization import DirectlyFollowsGraph
+from graphs.visualization import PetriNetGraph
+from graphs.petri_net import PetriNetToolkit, add_petri_net_to_graph
 from logger import get_logger
 from mining_algorithms.base_mining import BaseMining
 
@@ -9,6 +10,8 @@ class AlphaMining(BaseMining):
     def __init__(self, log):
         super().__init__(log)
         self.logger = get_logger("AlphaMining")
+        self.petri_toolkit = PetriNetToolkit()
+        self.petri_net = None
 
         self._calculate_filtered_model_state()
 
@@ -86,8 +89,7 @@ class AlphaMining(BaseMining):
 
     # Step 6
     def generate_graph(self, spm_threshold, node_freq_threshold_normalized, node_freq_threshold_absolute):
-        self.graph = DirectlyFollowsGraph(rankdir="LR")
-
+        self.graph = PetriNetGraph()
         self.graph.add_start_node()
         self.graph.add_end_node()
 
@@ -98,164 +100,90 @@ class AlphaMining(BaseMining):
         self.recalculate_model_filters()
 
         if not self.filtered_events:
-            self.graph.add_empty_circle("empty_circle_start")
-            self.graph.add_empty_circle("empty_circle_end")
-            self.graph.create_edge("Start", "empty_circle_start")
-            self.graph.create_edge("empty_circle_end", "End")
+            self.graph.create_edge("Start", "End")
+            self.petri_net = None
             return
-
-        self.graph.add_empty_circle("empty_circle_start")
-        self.graph.add_empty_circle("empty_circle_end")
-        self.graph.create_edge("Start", "empty_circle_start")
 
         self._calculate_filtered_model_state()
 
         node_stats_map = {stat["node"]: stat for stat in self.get_node_statistics()}
 
-        if not self.yl_set:
-            # If no transitions (yl_set) were found in the model, but there are still start_nodes present,
-            # treat each start_node (also end_node in this case) as a standalone unit from Start to End
-            for start_end_node in self.start_nodes:
-                stats = node_stats_map.get(start_end_node, {})
-                abs_freq = self.filtered_appearance_freqs.get(start_end_node, 0)
-                self.graph.add_event(
-                    str(start_end_node),
-                    spm=stats["spm"],
-                    normalized_frequency=stats["frequency"],
-                    absolute_frequency=abs_freq,
-                    shape="circle",
-                    style="filled",
-                )
-                self.graph.create_edge("empty_circle_start", str(start_end_node))
-                self.graph.create_edge(str(start_end_node), "empty_circle_end")
-            self.graph.create_edge("empty_circle_end", "End")
-            return
-
-        # Add nodes (events to draw combined with start and end nodes)
         nodes_to_draw = self.__events_to_draw().union(
             self.start_nodes.intersection(self.filtered_events),
             self.end_nodes.intersection(self.filtered_events)
         )
+        if not nodes_to_draw:
+            nodes_to_draw = set(self.filtered_events)
+
+        petri_net, start_place, end_place = self.petri_toolkit.create_base_net()
+        place_counter = itertools.count()
 
         for node in nodes_to_draw:
-            stats = node_stats_map.get(node, {})
-            abs_freq = self.filtered_appearance_freqs.get(node, 0)
-            self.graph.add_event(
-                str(node),
-                spm=stats["spm"],
-                normalized_frequency=stats["frequency"],
-                absolute_frequency=abs_freq,
-                shape="circle",
-                style="filled",
-            )
+            node_id = str(node)
+            self.petri_toolkit.register_transition(node_id, visible=True, label=node_id)
 
-        connected_sources = set()
-        connected_targets = set()
+        has_incoming = {str(node): False for node in nodes_to_draw}
+        has_outgoing = {str(node): False for node in nodes_to_draw}
 
-        # Add and connect nodes based on yl_set logic
-        for _set in self.yl_set:
-            if len(_set) == 2:
-                A, B = _set[0], _set[1]
-                circle_id = f"{A}_{B}"
-
-                # Calculate dynamic sources and targets
-                valid_sources = [a for a in A if any(self.filter_edge(a, b) for b in B)]
-                valid_targets = [b for b in B if any(self.filter_edge(a, b) for a in A)]
-
-                self.logger.debug(f"Pair A={A}, B={B} -> Sources: {valid_sources}, Targets: {valid_targets}")
-
-                if not valid_sources or not valid_targets:
-                    self.logger.debug(f"Skipped pair A={A}, B={B} due to no valid edges.")
-                    continue
-
-                # Track successful connections
-                connected_sources.update(valid_sources)
-                connected_targets.update(valid_targets)
-
-                # Case 1: Single-to-Single
-                if len(valid_sources) == 1 and len(valid_targets) == 1:
-                    a, b = valid_sources[0], valid_targets[0]
-                    self.logger.debug(f"[Single-to-Single] {a} -> {b}")
-                    circle_id = f"{a}_{b}"
-                    self.create_safe_node(circle_id)
-                    self.create_safe_ingoing_edge(str(a), circle_id)
-                    self.create_safe_outgoing_edge(circle_id, str(b), str(a))
-
-                # Case 2: Single-to-Multiple
-                elif len(valid_sources) == 1:
-                    a = valid_sources[0]
-                    if self.__is_set_in_choice(valid_targets, self.choice_set):
-                        self.logger.debug(f"Single-to-Choice: {a} -> {valid_targets}")
-                        self.create_safe_node(circle_id)
-                        self.create_safe_ingoing_edge(str(a), circle_id)
-                        for b in valid_targets:
-                            self.create_safe_outgoing_edge(circle_id, str(b), str(a))
-                    elif self.__is_set_in_parallel(valid_targets, self.parallel_set):
-                        self.logger.debug(f"Single-to-Parallel: {a} -> {valid_targets}")
-                        for b in valid_targets:
-                            cid = f"{a}_{b}"
-                            self.create_safe_node(cid)
-                            self.create_safe_ingoing_edge(str(a), cid)
-                            self.create_safe_outgoing_edge(cid, str(b), str(a))
-
-                # Case 3: Multiple-to-Single
-                elif len(valid_targets) == 1:
-                    b = valid_targets[0]
-                    if self.__is_set_in_choice(valid_sources, self.choice_set):
-                        self.logger.debug(f"Choice-to-Single: {valid_sources} -> {b}")
-                        self.create_safe_node(circle_id)
-                        for a in valid_sources:
-                            self.create_safe_ingoing_edge(str(a), circle_id)
-                        self.create_safe_outgoing_edge(circle_id, str(b), str(valid_sources[0]))
-                    elif self.__is_set_in_parallel(valid_sources, self.parallel_set):
-                        self.logger.debug(f"Parallel-to-Single: {valid_sources} -> {b}")
-                        for a in valid_sources:
-                            cid = f"{a}_{b}"
-                            self.create_safe_node(cid)
-                            self.create_safe_ingoing_edge(str(a), cid)
-                            self.create_safe_outgoing_edge(cid, str(b), str(a))
-
-                # Case 4: Multiple-to-Multiple
-                else:
-                    if self.__is_set_in_choice(valid_sources, self.choice_set) and self.__is_set_in_choice(
-                            valid_targets, self.choice_set):
-                        self.logger.debug(f"Choice-to-Choice: {valid_sources} -> {valid_targets}")
-                        self.create_safe_node(circle_id)
-                        for a in valid_sources:
-                            self.create_safe_ingoing_edge(str(a), circle_id)
-                        for b in valid_targets:
-                            self.create_safe_outgoing_edge(circle_id, str(b), str(valid_sources[0]))
-                    elif self.__is_set_in_parallel(valid_sources, self.parallel_set) and self.__is_set_in_parallel(
-                            valid_targets, self.parallel_set):
-                        self.logger.debug(f"Parallel-to-Parallel: {valid_sources} -> {valid_targets}")
-                        for a in valid_sources:
-                            for b in valid_targets:
-                                cid = f"{a}_{b}"
-                                self.create_safe_node(cid)
-                                self.create_safe_ingoing_edge(str(a), cid)
-                                self.create_safe_outgoing_edge(cid, str(b), str(a))
-
-        # Ensure all remaining filtered nodes are connected to Start/End if not already handled
-        for node in nodes_to_draw:
-            has_in = node in connected_targets
-            has_out = node in connected_sources
-
-            if not has_in:
-                self.logger.debug(f"Node {node} has no incoming edges. Added to start_nodes.")
-                self.start_nodes.add(node)
-            if not has_out:
-                self.logger.debug(f"Node {node} has no outgoing edges. Added to end_nodes.")
-                self.end_nodes.add(node)
-
-        # Connect the empty circle to the actual start and end nodes
         for node in self.start_nodes.intersection(nodes_to_draw):
-            self.graph.create_edge("empty_circle_start", str(node))
+            node_id = str(node)
+            self.petri_toolkit.add_arc(start_place, node_id)
+            has_incoming[node_id] = True
 
         for node in self.end_nodes.intersection(nodes_to_draw):
-            self.graph.create_edge(str(node), "empty_circle_end")
+            node_id = str(node)
+            self.petri_toolkit.add_arc(node_id, end_place)
+            has_outgoing[node_id] = True
 
-        # Connect the empty circle to the end node
-        self.graph.create_edge("empty_circle_end", "End")
+        for _set in self.yl_set:
+            if len(_set) != 2:
+                continue
+
+            A, B = _set
+            valid_sources = [a for a in A if a in nodes_to_draw and any(self.filter_edge(a, b) for b in B)]
+            valid_targets = [b for b in B if b in nodes_to_draw and any(self.filter_edge(a, b) for a in A)]
+
+            if not valid_sources or not valid_targets:
+                continue
+
+            place_id = f"p_alpha_{next(place_counter)}"
+            self.petri_toolkit.register_place(place_id)
+
+            for source in valid_sources:
+                source_id = str(source)
+                self.petri_toolkit.add_arc(source_id, place_id)
+                has_outgoing[source_id] = True
+
+            for target in valid_targets:
+                target_id = str(target)
+                self.petri_toolkit.add_arc(place_id, target_id)
+                has_incoming[target_id] = True
+
+        extra_start_nodes = set()
+        extra_end_nodes = set()
+        for node in nodes_to_draw:
+            node_id = str(node)
+            if not has_incoming.get(node_id):
+                self.petri_toolkit.add_arc(start_place, node_id)
+                extra_start_nodes.add(node)
+            if not has_outgoing.get(node_id):
+                self.petri_toolkit.add_arc(node_id, end_place)
+                extra_end_nodes.add(node)
+
+        self.start_nodes.update(extra_start_nodes)
+        self.end_nodes.update(extra_end_nodes)
+
+        self.petri_toolkit.finalize_net(petri_net)
+        self.petri_net = petri_net
+
+        add_petri_net_to_graph(
+            self.graph,
+            petri_net,
+            nodes_to_draw,
+            node_stats_map,
+            self.filtered_appearance_freqs,
+            logger=self.logger,
+        )
 
     # ALPHA MINER ALGORITHM IMPLEMENTATION END
     ####################################################################################################################
