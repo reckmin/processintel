@@ -11,21 +11,16 @@ class PetriNetToolkit:
         self.logger = get_logger("PetriNetToolkit")
         self.net: dict | None = None
 
-    def load_net(self, net: dict | None) -> dict:
+    def set_net(self, net: dict | None) -> None:
         """Assign an externally created Petri net to this toolkit."""
         if net is None:
             raise ValueError("Cannot load an empty Petri net.")
         self.net = net
-        return self.net
 
-    def get_current_net(self) -> dict | None:
-        """Return the currently loaded Petri net."""
-        return self.net
-
-    def _require_net(self) -> dict:
-        """Return the currently loaded net or raise Error if none."""
+    def get_current_net(self) -> dict:
+        """Return the currently loaded Petri net or raise if none is set."""
         if self.net is None:
-            raise RuntimeError("No Petri net is loaded. ")
+            raise RuntimeError("No Petri net is loaded.")
         return self.net
 
     def create_base_net(self) -> tuple[dict, str, str]:
@@ -65,11 +60,11 @@ class PetriNetToolkit:
 
     def register_place(self, place_id: str) -> None:
         """Ensure that the place exists inside the Petri net."""
-        net = self._require_net()
+        net = self.get_current_net()
         net['places'].add(place_id)
 
     def register_transition(self, transition_id: str, visible: bool, label: str | None = None) -> None:
-        net = self._require_net()
+        net = self.get_current_net()
         transition = net['transitions'].setdefault(
             transition_id,
             {'inputs': set(), 'outputs': set(), 'visible': visible}
@@ -82,14 +77,14 @@ class PetriNetToolkit:
 
     def register_gateway(self, node_id: str, gateway_type: str, role: str) -> None:
         """Store visualization metadata for gateway-like nodes (e.g., XOR/AND split or join)."""
-        net = self._require_net()
+        net = self.get_current_net()
         net.setdefault('gateway_nodes', {})[node_id] = {
             'type': gateway_type,
             'role': role,
         }
 
     def add_arc(self, source: str, target: str) -> None:
-        net = self._require_net()
+        net = self.get_current_net()
         net['arcs'].add((source, target))
         transition = net['transitions'].get(source)
         if transition is not None:
@@ -110,7 +105,7 @@ class PetriNetToolkit:
         """Ensure that an input place for (pred -> act) exists and return the corresponding ID.
         Creates a new one if necessary.
         """
-        net = self._require_net()
+        net = self.get_current_net()
         subset = subset or set()
         base = f"pi_{act}"
         if suffix:
@@ -280,7 +275,7 @@ class PetriNetToolkit:
     def finalize_net(self, net: dict | None = None) -> dict:
         """Populate helper mappings for silent transitions and forced firing."""
         if net is None:
-            net = self._require_net()
+            net = self.get_current_net()
         
         # Postprocessing:
         # Map each output place to silent transitions that follow it
@@ -314,7 +309,7 @@ class PetriNetToolkit:
 
     def simulate_trace(self, trace: Sequence[str], start_events: set[str]) -> tuple[int, bool]:
         """Token-game simulation for a trace on the currently loaded Petri net."""
-        net = self._require_net()
+        net = self.get_current_net()
         transitions = net['transitions']
         places = net['places']
 
