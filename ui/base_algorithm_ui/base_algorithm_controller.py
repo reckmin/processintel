@@ -255,6 +255,7 @@ class BaseAlgorithmController(BaseController, ABC):
 
         happy_path_events = set()
         if hasattr(self.mining_model, "get_happy_path_events"):
-            happy_path_events = self.mining_model.get_happy_path_events()
+            variant_index = st.session_state.get("happy_path_variant_index")
+            happy_path_events = self.mining_model.get_happy_path_events(variant_index)
 
         graph.highlight_happy_path(happy_path_events)

@@ -81,6 +81,20 @@ class BaseAlgorithmView(BaseView):
             value=st.session_state.get("show_happy_path", False),
             help="Highlights the activities that appear in the most frequent trace of the log.",
         )
+        model = st.session_state.get("model")
+        if model and hasattr(model, "get_happy_path_traces"):
+            happy_path_traces = model.get_happy_path_traces()
+            if len(happy_path_traces) > 1:
+                current_index = st.session_state.get("happy_path_variant_index", 0)
+                if not isinstance(current_index, int) or current_index not in range(len(happy_path_traces)):
+                    st.session_state.happy_path_variant_index = 0
+                st.selectbox(
+                    "Happy Path Variant",
+                    options=list(range(len(happy_path_traces))),
+                    format_func=lambda idx: f"Variant {idx + 1}",
+                    key="happy_path_variant_index",
+                    help="Select which most frequent trace to use for highlighting.",
+                )
 
     def render_log_filter_extensions(self, sidebar_values: dict[str, any]) -> None:
         """Renders additional node filtering controls.

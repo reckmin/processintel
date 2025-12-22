@@ -697,24 +697,47 @@ class BaseMining(MiningInterface):
         setattr(self, norm_attr, norm_val)
         setattr(self, abs_attr, abs_val)
 
-    # "Happy Path" is defined as the most frequent trace in the original unfiltered log.
+    # "Happy Path" is defined as the most frequent trace in the current filtered log.
     # UI uses this to highlight the corresponding activities in the mined model.
 
-    def get_happy_path_trace(self) -> tuple[str, ...] | None:
-        """Return the most frequent trace in the original log.
+    def get_happy_path_traces(self) -> list[tuple[str, ...]]:
+        """Return all most frequent traces in the current filtered log.
 
-        If multiple traces have the same maximum frequency -> longest trace and then lexical ordering"""
-        
-        if not self.log:
+        """
+        source_log = self.node_frequency_filtered_log
+        if not source_log:
+            return []
+
+        max_frequency = max(source_log.values())
+        most_frequent_traces = [trace for trace, frequency in source_log.items() if frequency == max_frequency]
+        if not most_frequent_traces:
+            return []
+
+        max_length = max(len(trace) for trace in most_frequent_traces)
+        longest_traces = [trace for trace in most_frequent_traces if len(trace) == max_length]
+
+        return sorted(longest_traces)
+
+    def get_happy_path_trace(self, variant_index: int | None = None) -> tuple[str, ...] | None:
+        """Return the most frequent trace in the current filtered log.
+        The optional variant_index selects a specific variant.
+        """
+        traces = self.get_happy_path_traces()
+        if not traces:
             return None
 
-        max_frequency = max(self.log.values())
-        most_frequent_traces = [trace for trace, frequency in self.log.items() if frequency == max_frequency]
+        if variant_index is None:
+            return traces[0]
 
-        #prefer longer traces -> if tied fall back to lexical order.
-        return sorted(most_frequent_traces, key=lambda trace: (-len(trace), trace))[0]
+        if not isinstance(variant_index, int):
+            return traces[0]
 
-    def get_happy_path_events(self) -> set[str]:
+        if variant_index < 0 or variant_index >= len(traces):
+            return traces[0]
+
+        return traces[variant_index]
+
+    def get_happy_path_events(self, variant_index: int | None = None) -> set[str]:
         """Return the set of activity labels contained in the Happy Path."""
-        trace = self.get_happy_path_trace()
+        trace = self.get_happy_path_trace(variant_index)
         return set(trace) if trace else set()
