@@ -101,15 +101,30 @@ class PetriNetGraph(BaseGraph):
         gateway = self.gateway_info.get(id, {})
         if gateway:
             gateway_type = gateway.get("type", "").lower()
-            title = "Gateway"
+            title = ""
             description = ""
+            role = gateway.get("role", "").lower()
 
             if gateway_type == "xor":
                 title = "Exclusive Gateway"
-                description = "Exclusive Gateway\n\nThe Exclusive Gateway represents a decision point in the process flow."
+                description = "**Exclusive Gateway**\nThe Exclusive Gateway represents a decision point in the process flow."
             elif gateway_type in ("and", "par", "parallel"):
                 title = "Parallel Gateway"
-                description = "Parallel Gateway\n\nThe Parallel Gateway represents synchronization in the process flow."
+                description = "**Parallel Gateway**\nThe Parallel Gateway represents synchronization in the process flow."
+            else:
+                return super().node_to_string(id)
+
+            if role == "split":
+                title = title.replace("Gateway", "Start Gate")
+            elif role == "join":
+                title = title.replace("Gateway", "End Gate")
             return title, description
+
+
+        node = self.get_node(id)
+        node_label = node.get_label().strip().lower() if node else ""
+        node_id = str(id).lower()
+        if node_id.startswith("tau") or node_label == "silent" or node_label.startswith("silent "):
+            return "Silent Transition", "**Silent Transition**\nRepresents an invisible routing step in the Petri net."
 
         return super().node_to_string(id)

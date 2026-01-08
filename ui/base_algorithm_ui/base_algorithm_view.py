@@ -75,7 +75,7 @@ class BaseAlgorithmView(BaseView):
 
         # UI toggle to highlight Happy Path in the model.
         st.write("### **Highlighting**")
-        st.toggle(
+        show_happy_path = st.toggle(
             "Show Happy Path",
             key="show_happy_path",
             value=st.session_state.get("show_happy_path", False),
@@ -95,6 +95,15 @@ class BaseAlgorithmView(BaseView):
                     key="happy_path_variant_index",
                     help="Select which most frequent trace to use for highlighting.",
                 )
+            variant_index = st.session_state.get("happy_path_variant_index", 0)
+            if not isinstance(variant_index, int) or variant_index not in range(len(happy_path_traces)):
+                variant_index = 0
+                st.session_state.happy_path_variant_index = variant_index
+            if show_happy_path:
+                trace = model.get_happy_path_trace(variant_index)
+                if trace:
+                    trace_str = " -> ".join(str(step) for step in trace)
+                    st.markdown(f"**Current Variant:** {trace_str}")
 
     def render_log_filter_extensions(self, sidebar_values: dict[str, any]) -> None:
         """Renders additional node filtering controls.
