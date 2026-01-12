@@ -54,10 +54,23 @@ in
         '';
       };
 
+      tmpFileMaxAgeMinutes = lib.mkOption {
+        type = lib.types.ints.positive;
+        default = 60;
+        description = ''
+          Maximum age (in minutes) of temporary files.
+          Files older than this are automatically removed.
+        '';
+      };
+
     };
   };
 
   config = lib.mkIf cfg.enable {
+
+    systemd.tmpfiles.rules = [
+      "d /tmp/${serviceName} 0700 ${user} ${config.services.nginx.group} -"
+    ];
 
     systemd.services.${serviceName} = {
       description = "ProcessIntel service";
@@ -90,13 +103,37 @@ in
 
         CacheDirectory = [
           serviceName
-          "fontconfig
-"
+          "fontconfig"
         ];
         RuntimeDirectory = serviceName;
         RuntimeDirectoryMode = 750;
 
         WorkingDirectory = runtimePath;
+      };
+    };
+
+    systemd.services.processintel-tmp-cleanup = {
+      description = "Cleanup tmp files for ProcessIntel service";
+
+      serviceConfig = {
+        Type = "oneshot";
+        User = user;
+        Group = config.services.nginx.group;
+
+        ExecStart = ''
+          ${pkgs.findutils}/bin/find /tmp/processintel \
+            -type f \
+            -mmin +${toString cfg.tmpFileMaxAgeMinutes} \
+            -delete
+        '';
+      };
+    };
+
+    systemd.timers.processintel-tmp-cleanup = {
+      wantedBy = [ "timers.target" ];
+      timerConfig = {
+        OnCalendar = "hourly";
+        Persistent = true;
       };
     };
 
