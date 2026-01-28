@@ -170,7 +170,7 @@ class GeneticMinerController(BaseAlgorithmController):
                 view.display_loading_spinner("Mining...", self.perform_mining)
             except InvalidNodeNameException as ex:
                 self.logger.exception(ex)
-                self.logger.error(
+                self.logger.warning(
                     "Invalid node name. The string '___' is not allowed in node names."
                 )
                 st.session_state.error = (

@@ -84,7 +84,7 @@ class DetectionModel:
             detected_delimiter = dialect.delimiter
         except Exception as e:
             logger = get_logger("DetectionModel")
-            logger.error(f"Delimiter detection failed")
+            logger.info(f"Delimiter detection failed")
             logger.info("set delimiter to empty string")
 
         return detected_delimiter

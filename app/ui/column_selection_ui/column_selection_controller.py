@@ -188,7 +188,7 @@ class ColumnSelectionController(BaseController):
         If a column is selected multiple times, an error message is displayed and the user is navigated back to the column selection page.
         """
         if not all(self.selected_columns.values()):
-            self.logger.error("Not all columns are selected")
+            self.logger.warning("Not all columns are selected")
             st.session_state.error = "Please select a column for all columns"
             st.session_state.page = "ColumnSelection"
             return
@@ -196,7 +196,7 @@ class ColumnSelectionController(BaseController):
         if len(set(self.selected_columns.values())) != len(
             self.selected_columns.values()
         ):
-            self.logger.error("Columns are selected multiple times")
+            self.logger.warning("Columns are selected multiple times")
             st.session_state.error = "Please select a different column for each column"
             st.session_state.page = "ColumnSelection"
             return

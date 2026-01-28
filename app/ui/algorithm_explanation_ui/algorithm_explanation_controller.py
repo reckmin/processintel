@@ -57,7 +57,7 @@ class AlgorithmExplanationController(BaseController):
             to_home()
 
         if st.session_state.algorithm not in docs_path_mappings:
-            self.logger.error("Algorithm does not have documentation")
+            self.logger.warning("Algorithm does not have documentation")
             self.logger.info("redirect to algorithm page")
             st.session_state.error = "Algorithm does not have documentation"
             navigate_to("Algorithm")
@@ -92,7 +92,7 @@ class AlgorithmExplanationController(BaseController):
             selected_view.display_algorithm_file(file_content)
         except FileNotFoundError as e:
             self.logger.exception(e)
-            self.logger.error("Algorithm does not have a documentation file")
+            self.logger.warning("Algorithm does not have a documentation file")
             self.logger.info("redirect to algorithm page")
             st.session_state.error = "Algorithm does not have a documentation file"
             navigate_to("Algorithm")

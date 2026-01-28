@@ -200,7 +200,7 @@ class BaseAlgorithmController(BaseController, ABC):
                 "df" not in st.session_state
                 or "selected_columns" not in st.session_state
             ):
-                self.logger.error("DataFrame or selected columns are missing.")
+                self.logger.warning("DataFrame or selected columns are missing.")
                 self.logger.info("redirect to home page")
                 st.session_state.error = "A DataFrame and selected columns must be provided to create a model."
                 to_home()
@@ -232,7 +232,7 @@ class BaseAlgorithmController(BaseController, ABC):
                 view.display_loading_spinner("Mining...", self.perform_mining)
             except InvalidNodeNameException as ex:
                 self.logger.exception(ex)
-                self.logger.error(
+                self.logger.warning(
                     "Invalid node name. The string '___' is not allowed in node names."
                 )
                 st.session_state.error = (
