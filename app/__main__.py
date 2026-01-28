@@ -46,12 +46,6 @@ def apply_streamlit_env(prefix="STREAMLIT_"):
 def main():
     apply_streamlit_env()
 
-    config.set_option("theme.font", "Montserrat")
-    config.set_option(
-        "theme.sidebar.font",
-        "Montserrat",
-    )
-
     app_path = os.path.join(os.path.dirname(__file__), "streamlit_app.py")
     streamlit_run(
         app_path,
