@@ -136,3 +136,5 @@ class HomeController(BaseController):
         selected_view.display_file_upload(self.supported_file_types)
         if self.uploaded_file is not None:
             self.process_file(selected_view)
+
+        selected_view.display_disclaimer()
