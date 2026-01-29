@@ -51,12 +51,14 @@ def number_input_slider(
             help=help,
         )
 
+    if st.session_state[key] != st.session_state.get(f"{key}_text_input", None):
+        st.session_state[f"{key}_text_input"] = st.session_state[key]
+
     with number_input_column:
         st.number_input(
             label=" ",
             min_value=min_value,
             max_value=max_value,
-            value=st.session_state[key] if key in st.session_state else value,
             step=step,
             key=f"{key}_text_input",
             on_change=set_session_state,
