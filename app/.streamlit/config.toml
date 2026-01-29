@@ -1,0 +1,17 @@
+[theme]
+font = "Montserrat:https://processintel.org/api/font/montserrat/font.css"
+
+[theme.sidebar]
+font = "Montserrat:https://processintel.org/api/font/montserrat/font.css"
+
+[theme.light]
+font = "Montserrat:https://processintel.org/api/font/montserrat/font.css"
+
+[theme.dark]
+font = "Montserrat:https://processintel.org/api/font/montserrat/font.css"
+
+[theme.light.sidebar]
+font = "Montserrat:https://processintel.org/api/font/montserrat/font.css"
+
+[theme.dark.sidebar]
+font = "Montserrat:https://processintel.org/api/font/montserrat/font.css"
