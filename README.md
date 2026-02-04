@@ -1,4 +1,4 @@
-![alt text](ProcessIntel.jpg?raw=true)
+![alt text](ProcessIntel.png?raw=true)
 
 # ProcessIntel
 
