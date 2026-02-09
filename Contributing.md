@@ -137,6 +137,13 @@ Not allowed:
 
 Split work into multiple PRs if necessary.
 
+Never ever create merge commits. Rebase + fast forward  only.  
+Thus never pull without `--ff-only`. Better `git fetch` + `git rebase …`
+
+When adding changes to pull request, keep the commits clean. Never ever add unecessary fix commits.  
+Squash your commits with an interactive rebase:  
+`git rebase -i HEAD~5` (for editing the last 5 commits).
+
 ### Pull Request Requirements
 
 Each Pull Request must:
