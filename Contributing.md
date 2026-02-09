@@ -57,12 +57,12 @@ Direct commits to the main repository are not allowed.
 Create and clone your fork:
 
 ```bash
-git clone ssh://git@code.swisdata.eu:your-username/ProcessIntel.git
+git clone ssh://git@code.swisdata.eu:your-username/processintel.git
 ```
 
 Add the upstream repository:
 ```bash
-git remote add upstream ssh://git@code.swisdata.eu:SWISDATA/ProcessIntel.git
+git remote add upstream ssh://git@code.swisdata.eu:SWISDATA/processintel.git
 ```
 
 ## Repository Workflow
