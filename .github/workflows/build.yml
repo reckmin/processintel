@@ -1,0 +1,70 @@
+name: Build Application
+
+on:
+  push:
+    branches: [ main ]
+    paths:
+      - "**/*.py"
+      - "package.nix"
+      - "flake.lock"
+      - "flake.nix"
+      - ".github/workflows/build.yml"
+
+  pull_request:
+    branches: [ main ]
+    paths:
+      - "**/*.py"
+      - "package.nix"
+      - "flake.lock"
+      - "flake.nix"
+      - ".github/workflows/build.yml"
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Install Nix
+        uses: cachix/install-nix-action@v27
+        with:
+          extra_nix_config: |
+            experimental-features = nix-command flakes
+
+      - name: Detect changed Python files
+        id: changes
+        run: |
+          if [ "${{ github.event_name }}" = "push" ]; then
+            BASE="${{ github.event.before }}"
+            HEAD="${{ github.sha }}"
+            echo "Push diff: $BASE..$HEAD"
+            RANGE="$BASE..$HEAD"
+
+          elif [ "${{ github.event_name }}" = "pull_request" ]; then
+            BASE="${{ github.event.pull_request.base.sha }}"
+            HEAD="${{ github.event.pull_request.head.sha }}"
+            echo "PR diff: $BASE..$HEAD"
+            RANGE="$BASE..$HEAD"
+          fi
+
+          git diff --name-only --diff-filter=ACMR "$RANGE" | grep -E '\.py$' > changed_files.txt || true
+
+          echo "Changed files:"
+          cat changed_files.txt || true
+
+      - name: Run Black
+        run: |
+          if [ -s changed_files.txt ]; then
+            nix develop .#processintel --impure --accept-flake-config -c \
+              python -m black --check $(< changed_files.txt)
+          else
+            echo "No Python files changed - skipping Black"
+          fi
+
+      - name: Build and test Application
+        run: |
+          nix build .#processintel --impure --accept-flake-config
