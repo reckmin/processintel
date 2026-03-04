@@ -27,23 +27,19 @@ Add your SSH private key:
 ```bash
 ssh-add ~/.ssh/<filename>
 ```
-### Step 3: Add the SSH Key to Forgejo
+### Step 3: Add the SSH Key to Github
 
 Copy your public SSH key:
 ```bash
 cat ~/.ssh/<filename>.pub
 ```
-- Open your Forgejo account
-- Go to Settings -> SSH / GPG Keys
+- Open your Github account
+- Go to Settings -> SSH and GPG Keys
 - Paste the key and save
 
 Never upload the private key.
 Only the .pub file belongs in your account settings.
 
-### Step 4: Verify SSH Access
-```bash
-ssh -T git@code.swisdata.eu
-```
 
 If the setup is correct, you should see a welcome message.
 
@@ -64,7 +60,7 @@ Recommended options:
 - Email: the same email you use for Git commits
 - Expiration: your choice (or none)
 
-### Step 2: Add the GPG Key to Forgejo
+### Step 2: Add the GPG Key to Github
 
 List your keys and copy the key ID:
 ```bash
@@ -76,7 +72,7 @@ Export your public GPG key:
 gpg --armor --export YOUR_KEY_ID
 ```
 
-- Open Settings -> SSH / GPG Keys in Forgejo
+- Open Settings -> SSH and GPG Keys in Github
 - Paste the exported key and save
 
 ### Step 3: Configure Git to Sign Commits

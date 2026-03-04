@@ -29,7 +29,7 @@ These requirements apply to all contributors, including thesis students.
 
 SSH is used to securely authenticate all access to the repository. All interactions with the repository must use SSH. HTTPS access is not allowed.  
 
-You must generate an SSH key and add it to your Forgejo account.
+You must generate an SSH key and add it to your Github account.
 
 How to generate and add an SSH key:  
 See [SETUP.md](SETUP.md#ssh-key-setup) for step-by-step instructions.
@@ -38,7 +38,7 @@ See [SETUP.md](SETUP.md#ssh-key-setup) for step-by-step instructions.
 
 GPG is used to cryptographically sign commits and verify authorship. All commits must be signed using GPG.  
 
-Your public GPG key must be added to your Forgejo profile.    
+Your public GPG key must be added to your Github profile.    
 
 Enable commit signing:
 ```bash
@@ -57,12 +57,12 @@ Direct commits to the main repository are not allowed.
 Create and clone your fork:
 
 ```bash
-git clone ssh://git@code.swisdata.eu:your-username/processintel.git
+git clone git@github.com:your-username/processintel.git
 ```
 
 Add the upstream repository:
 ```bash
-git remote add upstream ssh://git@code.swisdata.eu:SWISDATA/processintel.git
+git remote add upstream git@github.com:SWISDATA/processintel.git
 ```
 
 ## Repository Workflow
@@ -73,7 +73,7 @@ Direct commits to the main repository are not allowed.
 
 **Workflow Overview**
 
-1. Fork the main repository on Forgejo
+1. Fork the main repository on Github
 2. Clone your fork locally
 3. Create a dedicated branch for your change
 4. Implement, document, and test your changes
