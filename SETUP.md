@@ -40,9 +40,6 @@ cat ~/.ssh/<filename>.pub
 Never upload the private key.
 Only the .pub file belongs in your account settings.
 
-
-If the setup is correct, you should see a welcome message.
-
 ## GPG Key Setup
 
 GPG is used to cryptographically sign commits and verify authorship.
@@ -93,7 +90,10 @@ git log --show-signature -1
 
 You should see a valid GPG signature.
 
-### Step 5: (Optional) Configure pinentry
+
+### Common Problems
+
+#### Configure pinentry
 
 GPG uses a helper program called pinentry to request your key's passphrase.
 This usually works automatically, but some environments require explicit configuration.
@@ -112,7 +112,7 @@ Example (macOS, Homebrew):
 ```
 pinentry-program /opt/homebrew/bin/pinentry-mac
 ```
-Example Gnome:
+Example (Gnome):
 ```
 pinentry-program /usr/bin/pinentry-gnome3
 ```
@@ -121,3 +121,22 @@ Restart the GPG agent:
 ```
 gpgconf --kill gpg-agent
 ```
+
+#### GPG Client Not found by git
+
+If you see an error message like:
+```
+gpg: signing failed: No secret key
+```
+or Git cannot find the GPG client, you may need to explicitly configure which GPG program Git should use.
+
+Set the path to your GPG executable with:
+```bash
+git config --global gpg.program [PATH_TO_GPG]
+```
+
+Example (Linux):
+```bash
+git config --global gpg.program "/usr/bin/gpg"
+```
+
