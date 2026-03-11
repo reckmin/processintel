@@ -12,10 +12,10 @@
   - Import **CSV event logs**
   - Load **ProcessIntel native process models**
 - **Process mining algorithms**
-  - Alpha Miner  
-  - Heuristic Miner  
-  - Inductive Miner  
-  - Fuzzy Miner  
+  - Alpha Miner
+  - Heuristic Miner
+  - Inductive Miner
+  - Fuzzy Miner
   - Genetic Miner
 - **Interactive process model visualization**
   - Fully interactive graphs
@@ -39,20 +39,17 @@
 
 ## Requirements
 
-- **Python:** 3.12 or newer  
-- **Graphviz (required)** for process model rendering
+To run the application, the following are required:
 
-Install Graphviz from:  
-<https://graphviz.org/>
+- **Python**: 3.12 or newer
+- **Graphviz**: required for process model rendering
 
-Verify installation:
-```bash
-dot -V
-```
+Detailed installation instructions are available in the setup guide:
 
-Ensure the Graphviz bin directory is available in your system PATH.
+- [Python setup](SETUP.md#python-setup)
+- [Graphviz setup](SETUP.md#graphviz-setup)
 
-All Python dependencies are listed in requirements.txt.
+All Python dependencies used by the project are listed in `requirements.txt`.
 
 ---
 
@@ -111,8 +108,30 @@ python -m unittest discover -s tests -p "*_test.py"
 
 ## Nix Support
 
-ProcessIntel can also be run as a Nix service, enabling reproducible builds and seamless deployment in Nix-based environments.
-See the Nix-related configuration files in the repository for details.
+ProcessIntel supports **Nix-based environments**, enabling reproducible builds and consistent development setups.
+
+The project can be used with Nix in multiple ways:
+
+- **Nix development shell** for local development and experimentation
+- **Nix service deployment** for running the application in a managed environment
+
+Using Nix ensures that all dependencies (including the correct Python version and required tools) are provided automatically by the Nix environment.
+
+For development, you can enter the Nix development shell:
+
+```bash
+nix develop --impure
+```
+
+Once inside the development shell, the project can be started normally using Python:
+```bash
+python -m streamlit run app/streamlit_app.py
+```
+The repository also contains Nix configuration files that allow the application to be deployed and run as a Nix service.
+
+For detailed instructions on installing Nix and running the project with it, see:
+
+[SETUP.md](SETUP.md#nix-setup)
 
 ---
 
