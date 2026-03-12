@@ -9,6 +9,27 @@ Please read and follow these guidelines carefully.
 
 ---
 
+## Table of Contents
+
+- [General Principles](#general-principles)
+- [Required Setup](#required-setup)
+  - [SSH Keys](#ssh-keys)
+  - [GPG Keys & Signed Commits](#gpg-keys--signed-commits)
+  - [Forking the Repository](#forking-the-repository)
+- [Repository Workflow](#repository-workflow)
+- [Keeping Forks and Branches Up to Date](#keeping-forks-and-branches-up-to-date)
+- [Branch Guidelines](#branch-guidelines)
+- [Commit Message Guidelines](#commit-message-guidelines)
+- [Pull Request Guidelines](#pull-request-guidelines)
+- [Code Formatting](#code-formatting)
+- [Docstring Guidelines](#docstring-guidelines)
+- [Testing Guidelines](#testing-guidelines)
+- [Review Process](#review-process)
+- [Extending the Project](#extending-the-project)
+- [Questions](#questions)
+
+---
+
 ## General Principles
 
 - Keep changes **small, focused, and reviewable**
@@ -65,6 +86,8 @@ Add the upstream repository:
 git remote add upstream git@github.com:SWISDATA/processintel.git
 ```
 
+--- 
+
 ## Repository Workflow
 
 All development must be performed in a personal fork of the main repository. Contributions are integrated into the main repository exclusively via Pull Requests (PRs).  
@@ -79,6 +102,59 @@ Direct commits to the main repository are not allowed.
 4. Implement, document, and test your changes
 5. Push the branch to your fork
 6. Open a Pull Request
+
+---
+
+## Keeping Forks and Branches Up to Date
+
+To ensure a clean history and preserve commit signatures, your fork and all development branches must stay up to date with the upstream main branch. 
+Pull Requests that are not up to date with main will not be merged.
+
+### Keep Your Fork's main Branch Updated
+
+Your fork's main branch should always match the upstream repository.
+
+Update it regularly:
+```bash
+git fetch upstream
+git checkout main
+git rebase upstream/main
+git push origin main
+```
+
+This ensures that your fork stays synchronized with the main repository.
+
+### Keep Your Feature Branch Updated
+
+Your feature branches should be based on the latest main. 
+Before opening a Pull Request and always before requesting a review update your branch:
+
+```bash
+git fetch upstream
+git rebase upstream/main
+```
+
+If changes occurred in the upstream repository, merge conflicts may appear during the rebase. 
+Resolve all conflicts manually and continue the rebase process.
+
+### Updating the Pull Request
+
+After rebasing, the commit history of your branch may change. 
+Therefore, you must update the branch in your fork using a force push:
+
+```bash
+git push origin <branchname> --force
+``` 
+This updates the Pull Request with the rebased commits.
+
+### Important Notes
+
+- Pull Requests must be rebased on the latest main
+- Merge commits are not allowed
+- Always use rebase + fast-forward workflows
+- Always resolve conflicts locally before updating the PR
+- Use force push only when updating your own branch after a rebase
+
 ---
 
 ## Branch Guidelines
@@ -144,6 +220,9 @@ When adding changes to pull request, keep the commits clean. Never ever add unec
 Squash your commits with an interactive rebase:  
 `git rebase -i HEAD~5` (for editing the last 5 commits).
 
+Interactive rebase allows you to edit, reorder, squash, or combine commits in order to create a clean commit history before submitting a Pull Request. 
+A detailed explanation of how interactive rebase works can be found here:
+[Git Tools - Rewriting History](https://git-scm.com/book/en/v2/Git-Tools-Rewriting-History)
 ### Pull Request Requirements
 
 Each Pull Request must:
@@ -206,7 +285,7 @@ ExceptionType
 
 ---
 
-## Testing Guildines
+## Testing Guidelines
 
 Testing is a core requirement for correctness, reproducibility, and validity.
 
