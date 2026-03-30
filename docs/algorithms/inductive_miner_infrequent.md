@@ -51,6 +51,8 @@ The traces threshold is in the range of 0.0 and 1.0. It removes traces from the 
 
 The noise threshold is in the range of 0.0 and 1.0. The recommended default value is 0.2, which filters edges with frequency below 20% of the maximum edge frequency during Phase 2 cut detection.
 
+## References
+
 [1] Leemans, S. J., Fahland, D., & van der Aalst, W. M. (2014). **Discovering block-structured process models from event logs containing infrequent behaviour**. In *International conference on business process management* (pp. 66-78). Springer, Cham.
 
 [2] Leemans, S. J. (2017). **Robust process mining with guarantees**. PhD Thesis, Eindhoven University of Technology.

@@ -12,7 +12,17 @@ class InductiveMinerInfrequentController(BaseAlgorithmController):
     def __init__(
         self, views=None, mining_model_class=None, dataframe_transformations=None
     ):
+        """Initializes the controller for the Inductive Miner Infrequent algorithm.
 
+        Parameters
+        ----------
+        views : List[BaseAlgorithmView] | BaseAlgorithmView, optional
+            The views for the IMf algorithm. If None is passed, the default view is used, by default None
+        mining_model_class : MiningInterface Class, optional
+            The mining model class for the algorithm. If None is passed, the default model class is used, by default None
+        dataframe_transformations : DataframeTransformations, optional
+            The class for the dataframe transformations. If None is passed, a new instance is created, by default None
+        """
         self.traces_threshold = None
         self.noise_threshold = 0.2
         self.use_petri_net = False
@@ -25,11 +35,19 @@ class InductiveMinerInfrequentController(BaseAlgorithmController):
         super().__init__(views, mining_model_class, dataframe_transformations)
 
     def get_page_title(self) -> str:
+        """Returns the page title.
 
+        Returns
+        -------
+        str
+            The page title.
+        """
         return "Inductive Mining Infrequent"
 
     def process_algorithm_parameters(self):
-
+        """Processes the algorithm parameters from the session state. The parameters are set to the instance variables.
+        If the parameters are not set in the session state, the default values are used.
+        """
         super().process_algorithm_parameters()
 
         if "traces_threshold" not in st.session_state:
@@ -45,6 +63,7 @@ class InductiveMinerInfrequentController(BaseAlgorithmController):
         self.use_petri_net = st.session_state.inductive_infrequent_use_petri_net
 
     def perform_mining(self):
+        """Performs the mining of the algorithm."""
 
         super().perform_mining(
             traces_threshold=self.traces_threshold,
@@ -53,7 +72,13 @@ class InductiveMinerInfrequentController(BaseAlgorithmController):
         )
 
     def have_parameters_changed(self) -> bool:
+        """Checks if the algorithm parameters have changed.
 
+        Returns
+        -------
+        bool
+            True if the algorithm parameters have changed, False otherwise.
+        """
         return (
             super().have_parameters_changed()
             or self.mining_model.get_traces_threshold() != self.traces_threshold
@@ -63,7 +88,14 @@ class InductiveMinerInfrequentController(BaseAlgorithmController):
         )
 
     def get_sidebar_values(self) -> dict[str, tuple[int | float, int | float]]:
+        """Returns the sidebar values for the mining algorithm.
 
+        Returns
+        -------
+        dict[str, tuple[int | float, int | float]]
+            A dictionary containing the minimum and maximum values for the sidebar sliders.
+            The keys of the dictionary are equal to the keys of the sliders.
+        """
         sidebar_values = super().get_sidebar_values()
         sidebar_values.update(
             {

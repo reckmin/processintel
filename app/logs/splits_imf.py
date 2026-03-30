@@ -33,8 +33,6 @@ Log Splitting Filters by Operator:
     - Add empty traces to body sublog for traces not starting/ending with body activities
 """
 
-from typing import Dict, Tuple, List, Set
-
 from app.logger import get_logger
 from app.logs.splits import find_correct_partition, parallel_split
 
@@ -43,8 +41,8 @@ logger = get_logger("IMfSplits")
 
 
 def exclusive_split_imf(
-    log: Dict[Tuple[str, ...], int], partitions: List[Set[str]]
-) -> List[Dict[Tuple[str, ...], int]]:
+    log: dict[tuple[str, ...], int], partitions: list[set[str]]
+) -> list[dict[tuple[str, ...], int]]:
     """
     Split log for XOR operator with infrequent behavior filtering.
 
@@ -64,17 +62,17 @@ def exclusive_split_imf(
 
     Parameters
     ----------
-    log : Dict[Tuple[str, ...], int]
+    log : dict[tuple[str, ...], int]
         Event log with traces and frequencies
-    partitions : List[Set[str]]
+    partitions : list[set[str]]
         XOR partitions of activities
 
     Returns
     -------
-    List[Dict[Tuple[str, ...], int]]
+    list[dict[tuple[str, ...], int]]
         Split sublogs, one per partition
     """
-    split_logs: List[Dict[Tuple[str, ...], int]] = [{} for _ in range(len(partitions))]
+    split_logs: list[dict[tuple[str, ...], int]] = [{} for _ in range(len(partitions))]
 
     for trace, frequency in log.items():
         if not trace:
@@ -117,8 +115,8 @@ def exclusive_split_imf(
 
 
 def sequence_split_imf(
-    log: Dict[Tuple[str, ...], int], partitions: List[Set[str]]
-) -> List[Dict[Tuple[str, ...], int]]:
+    log: dict[tuple[str, ...], int], partitions: list[set[str]]
+) -> list[dict[tuple[str, ...], int]]:
     """
     Split log for Sequence operator with infrequent behavior filtering.
 
@@ -136,17 +134,17 @@ def sequence_split_imf(
 
     Parameters
     ----------
-    log : Dict[Tuple[str, ...], int]
+    log : dict[tuple[str, ...], int]
         Event log with traces and frequencies
-    partitions : List[Set[str]]
+    partitions : list[set[str]]
         Sequence partitions of activities (ordered)
 
     Returns
     -------
-    List[Dict[Tuple[str, ...], int]]
+    list[dict[tuple[str, ...], int]]
         Split sublogs, one per partition (in order)
     """
-    split_logs: List[Dict[Tuple[str, ...], int]] = [{} for _ in range(len(partitions))]
+    split_logs: list[dict[tuple[str, ...], int]] = [{} for _ in range(len(partitions))]
 
     for trace, frequency in log.items():
         if not trace:
@@ -163,8 +161,8 @@ def sequence_split_imf(
 
 
 def _optimal_sequence_split(
-    trace: Tuple[str, ...], partitions: List[Set[str]]
-) -> List[Tuple[str, ...]]:
+    trace: tuple[str, ...], partitions: list[set[str]]
+) -> list[tuple[str, ...]]:
     """
     Find optimal way to split trace into sequence partitions minimizing removed events.
 
@@ -177,14 +175,14 @@ def _optimal_sequence_split(
 
     Parameters
     ----------
-    trace : Tuple[str, ...]
+    trace : tuple[str, ...]
         Input trace
-    partitions : List[Set[str]]
+    partitions : list[set[str]]
         Ordered sequence partitions
 
     Returns
     -------
-    List[Tuple[str, ...]]
+    list[tuple[str, ...]]
         Subtraces for each partition
     """
     n = len(trace)
@@ -261,7 +259,7 @@ def _optimal_sequence_split(
     split_points[0] = 0
 
     # Build subtraces based on split points
-    sub_traces: List[List[str]] = [[] for _ in range(m)]
+    sub_traces: list[list[str]] = [[] for _ in range(m)]
     for k in range(m):
         start = split_points[k]
         end = split_points[k + 1] if k < m - 1 else n
@@ -277,8 +275,8 @@ parallel_split_imf = parallel_split
 
 
 def loop_split_imf(
-    log: Dict[Tuple[str, ...], int], partitions: List[Set[str]]
-) -> List[Dict[Tuple[str, ...], int]]:
+    log: dict[tuple[str, ...], int], partitions: list[set[str]]
+) -> list[dict[tuple[str, ...], int]]:
     """
     Split log for Loop operator with infrequent behavior filtering.
 
@@ -300,17 +298,17 @@ def loop_split_imf(
 
     Parameters
     ----------
-    log : Dict[Tuple[str, ...], int]
+    log : dict[tuple[str, ...], int]
         Event log
-    partitions : List[Set[str]]
+    partitions : list[set[str]]
         Loop partitions: [body, redo1, redo2, ...]
 
     Returns
     -------
-    List[Dict[Tuple[str, ...], int]]
+    list[dict[tuple[str, ...], int]]
         Split sublogs: [body_log, redo1_log, redo2_log, ...]
     """
-    split_logs: List[Dict[Tuple[str, ...], int]] = [{} for _ in range(len(partitions))]
+    split_logs: list[dict[tuple[str, ...], int]] = [{} for _ in range(len(partitions))]
     body_partition = partitions[0]
 
     for trace, frequency in log.items():
@@ -338,7 +336,7 @@ def loop_split_imf(
             )
 
         # Split the trace - switch partitions when event changes
-        sub_trace: List[str] = []
+        sub_trace: list[str] = []
         current_idx = 0
 
         for event in trace:
@@ -374,7 +372,7 @@ def loop_split_imf(
 
 
 def is_single_activity_frequent(
-    log: Dict[Tuple[str, ...], int], noise_threshold: float
+    log: dict[tuple[str, ...], int], noise_threshold: float
 ) -> bool:
     """
     Determine if a single-activity log represents frequent behavior.
@@ -393,7 +391,7 @@ def is_single_activity_frequent(
 
     Parameters
     ----------
-    log : Dict[Tuple[str, ...], int]
+    log : dict[tuple[str, ...], int]
         Log containing only one unique activity
     noise_threshold : float
         The relative threshold k from the paper (0.0 to 1.0)
@@ -449,7 +447,7 @@ def is_single_activity_frequent(
 
 
 def is_empty_trace_frequent(
-    log: Dict[Tuple[str, ...], int], noise_threshold: float
+    log: dict[tuple[str, ...], int], noise_threshold: float
 ) -> bool:
     """
     Determine if empty traces in log are frequent enough to model with XOR(tau, ...).
@@ -465,7 +463,7 @@ def is_empty_trace_frequent(
 
     Parameters
     ----------
-    log : Dict[Tuple[str, ...], int]
+    log : dict[tuple[str, ...], int]
         Event log potentially containing empty traces
     noise_threshold : float
         The relative threshold k from the paper
