@@ -1,29 +1,24 @@
 import streamlit as st
 
 from app.components.number_input_slider import number_input_slider
-from app.ui.base_algorithm_ui.base_algorithm_view import BaseAlgorithmView
+from app.ui.inductive_miner_ui.inductive_miner_view import InductiveMinerView
 
 
-class InductiveMinerInfrequentView(BaseAlgorithmView):
+class InductiveMinerInfrequentView(InductiveMinerView):
+    """View for the Inductive Miner Infrequent algorithm."""
 
     def render_log_filter_extensions(
         self, sidebar_values: dict[str, tuple[int | float, int | float]]
     ) -> None:
+        """Renders the sidebar for the mining algorithm.
 
-        number_input_slider(
-            label="Traces Threshold",
-            min_value=sidebar_values["traces_threshold"][0],
-            max_value=sidebar_values["traces_threshold"][1],
-            key="traces_threshold",
-            help="""Minimum frequency threshold for traces. Traces below this threshold will be filtered out.""",
-        )
-
-        st.toggle(
-            "Petri-Net Visualization",
-            key="inductive_infrequent_use_petri_net",
-            value=st.session_state.get("inductive_infrequent_use_petri_net", False),
-            help="Switch between classic and petri-net visualization.",
-        )
+        Parameters
+        ----------
+        sidebar_values : dict[str, tuple[int  |  float, int  |  float]]
+            A dictionary containing the minimum and maximum values for the sidebar sliders.
+            The keys of the dictionary are equal to the keys of the sliders.
+        """
+        super().render_log_filter_extensions(sidebar_values)
 
         st.write("### Noise Filtering")
 
@@ -38,8 +33,8 @@ class InductiveMinerInfrequentView(BaseAlgorithmView):
         with st.expander("Guidance"):
             st.markdown(
                 """
-                        - [0.0]: No noise filtering 
-                        - [0.1-0.2]: Light noise filtering 
-                        - [0.2-0.4]: Moderate noise filtering
-                        - [above 0.5]: Aggressive noise filtering """
+                        - **[0.0]**: No noise filtering 
+                        - **[0.1-0.2]**: Light noise filtering 
+                        - **[0.2-0.4]**: Moderate noise filtering
+                        - **[above 0.5]**: Aggressive noise filtering """
             )

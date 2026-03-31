@@ -36,7 +36,6 @@ Log Splitting Filters by Operator:
 from app.logger import get_logger
 from app.logs.splits import find_correct_partition, parallel_split
 
-
 logger = get_logger("IMfSplits")
 
 

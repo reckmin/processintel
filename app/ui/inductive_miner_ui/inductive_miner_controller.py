@@ -58,10 +58,12 @@ class InductiveMinerController(BaseAlgorithmController):
             st.session_state.inductive_use_petri_net = self.use_petri_net
         self.use_petri_net = st.session_state.inductive_use_petri_net
 
-    def perform_mining(self) -> None:
+    def perform_mining(self, **kwargs) -> None:
         """Performs the mining of the Inductive Miner algorithm."""
         super().perform_mining(
-            traces_threshold=self.traces_threshold, use_petri_net=self.use_petri_net
+            traces_threshold=self.traces_threshold,
+            use_petri_net=self.use_petri_net,
+            **kwargs,
         )
 
     def have_parameters_changed(self) -> bool:

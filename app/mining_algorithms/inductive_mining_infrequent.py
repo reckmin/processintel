@@ -1,13 +1,7 @@
-from typing import List, Set, cast
 from app.graphs.cuts import exclusive_cut, parallel_cut, sequence_cut, loop_cut
 from app.graphs.dfg import DFG
 from app.logger import get_logger
-from app.logs.splits import (
-    exclusive_split,
-    parallel_split,
-    sequence_split,
-    loop_split,
-)
+
 from app.logs.splits_imf import (
     exclusive_split_imf,
     is_empty_trace_frequent,
@@ -133,9 +127,11 @@ class InductiveMiningInfrequent(InductiveMining):
             return tree
 
         if tuple() not in log:
-            result = self._try_cuts_standard(log)
+            result = super().calculate_cut(log)
+
             if result:
-                operator, sublogs = result
+                operator = result[0]
+                sublogs = list(result[1:])
                 return (
                     operator,
                     *[self._inductive_mining_imf(sublog) for sublog in sublogs],
@@ -259,57 +255,6 @@ class InductiveMiningInfrequent(InductiveMining):
             log_without_empty = {k: v for k, v in log.items() if k != tuple()}
             return ("xor", "tau", self._inductive_mining_imf(log_without_empty))
 
-    def _try_cuts_standard(self, log):
-        """Find a valid cut using the standard IM approach.
-
-        Parameters
-        ----------
-        log : dict[tuple[str, ...], int]
-            Event log mapping traces to their frequencies.
-
-        Returns
-        -------
-        tuple[str, list[dict[tuple[str, ...], int]]] or None
-            A tuple containing the detected operator (``"xor"``, ``"seq"``,
-            ``"par"``, or ``"loop"``) and the corresponding sublogs, or
-            ``None`` if no valid cut is found.
-        """
-
-        if not log:
-            return None
-
-        try:
-            dfg = DFG(log)
-
-            if partitions := exclusive_cut(dfg):
-                if len(partitions) > 1:
-                    sublogs = exclusive_split(log, cast(List[Set[str]], partitions))
-                    if self._validate_split(sublogs):
-                        return ("xor", sublogs)
-
-            if partitions := sequence_cut(dfg):
-                if len(partitions) > 1:
-                    sublogs = sequence_split(log, cast(List[Set[str]], partitions))
-                    if self._validate_split(sublogs):
-                        return ("seq", sublogs)
-
-            if partitions := parallel_cut(dfg):
-                if len(partitions) > 1:
-                    sublogs = parallel_split(log, cast(List[Set[str]], partitions))
-                    if self._validate_split(sublogs):
-                        return ("par", sublogs)
-
-            if partitions := loop_cut(dfg):
-                if len(partitions) > 1:
-                    sublogs = loop_split(log, cast(List[Set[str]], partitions))
-                    if self._validate_split(sublogs):
-                        return ("loop", sublogs)
-
-        except Exception as e:
-            self.logger.error(f"Error in standard cut detection: {e}")
-
-        return None
-
     def _try_cuts_filtered(self, log):
         """Find a valid cut on a filtered DFG with IMf filtering.
 
@@ -330,7 +275,6 @@ class InductiveMiningInfrequent(InductiveMining):
             return None
 
         try:
-            # Create filtered DFG
             filtered_dfg = self._create_filtered_dfg(log)
 
             if not filtered_dfg.get_nodes():
@@ -339,61 +283,25 @@ class InductiveMiningInfrequent(InductiveMining):
 
             # Try cuts with IMf log splitting
             if partitions := exclusive_cut(filtered_dfg):
-                if len(partitions) > 1:
-                    # Use IMf filtered splitting
-                    sublogs = exclusive_split_imf(log, cast(List[Set[str]], partitions))
-                    if self._validate_split(sublogs):
-                        return ("xor", sublogs)
+                sublogs = exclusive_split_imf(log, partitions)
+                return ("xor", sublogs)
 
             if partitions := sequence_cut(filtered_dfg):
-                if len(partitions) > 1:
-                    # Use IMf filtered splitting (optimal split)
-                    sublogs = sequence_split_imf(log, cast(List[Set[str]], partitions))
-                    if self._validate_split(sublogs):
-                        return ("seq", sublogs)
+                sublogs = sequence_split_imf(log, partitions)
+                return ("seq", sublogs)
 
             if partitions := parallel_cut(filtered_dfg):
-                if len(partitions) > 1:
-                    # Parallel: no filtering needed
-                    sublogs = parallel_split_imf(log, cast(List[Set[str]], partitions))
-                    if self._validate_split(sublogs):
-                        return ("par", sublogs)
+                sublogs = parallel_split_imf(log, partitions)
+                return ("par", sublogs)
 
             if partitions := loop_cut(filtered_dfg):
-                if len(partitions) > 1:
-                    # Use IMf filtered splitting (empty traces for invalid starts/ends)
-                    sublogs = loop_split_imf(log, cast(List[Set[str]], partitions))
-                    if self._validate_split(sublogs):
-                        return ("loop", sublogs)
+                sublogs = loop_split_imf(log, partitions)
+                return ("loop", sublogs)
 
         except Exception as e:
             self.logger.error(f"Error in filtered cut detection: {e}")
 
         return None
-
-    def _validate_split(self, splits):
-        """Validate whether a log split is acceptance.
-
-        Parameters
-        ----------
-        splits : list[dict[tuple[str, ...], int]]
-            List of sublogs resulting from a cut.
-
-        Returns
-        -------
-        bool
-            ``True`` if the split contains at least two sublogs and at least
-            one non-trivial sublog, otherwise ``False``.
-        """
-        if not splits or len(splits) < 2:
-            return False
-
-        for split in splits:
-            for trace in split:
-                if trace:
-                    return True
-
-        return False
 
     def _fallthrough_imf(self, log):
         """Create a flower model if no valid cut is found.
@@ -494,7 +402,7 @@ class InductiveMiningInfrequent(InductiveMining):
 
         # Identify frequent edges and connected nodes
         frequent_edges = []
-        connected_nodes: Set[str] = set()
+        connected_nodes: set[str] = set()
 
         for (src, tgt), freq in edge_freq.items():
             if freq >= threshold:
