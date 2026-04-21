@@ -1,4 +1,9 @@
+import os
 import pickle
+import tempfile
+import pandas as pd
+import streamlit as st
+import xml.etree.ElementTree as ET
 
 from app.graphs.visualization.base_graph import BaseGraph
 from app.exceptions.io_exceptions import (
@@ -99,3 +104,68 @@ class ExportOperations:
             The model as bytes
         """
         return pickle.dumps(model)
+
+    def export_to_xes_bytes(self, xes_tree: ET.ElementTree) -> bytes:
+        """Export xes_tree to XES format and return as bytes.
+
+        Parameters
+        ----------
+        xes_tree : ET.ElementTree
+            The XES XML tree to export.
+
+        Returns
+        -------
+        bytes
+            The XES file as bytes.
+
+        Raises
+        ------
+        InvalidTypeException
+            If xes_tree is not an ElementTree
+        """
+        if not isinstance(xes_tree, ET.ElementTree):
+            raise InvalidTypeException("ElementTree", type(xes_tree))
+
+        try:
+            with tempfile.NamedTemporaryFile(
+                delete=False,
+                suffix=".xes",
+                dir=st.session_state.session_tmp_dir,
+            ) as temp_file:
+                temp_path = temp_file.name
+
+            xes_tree.write(temp_path, encoding="utf-8", xml_declaration=True)
+
+            with open(temp_path, "rb") as file:
+                xes_bytes = file.read()
+
+            os.unlink(temp_path)
+
+            return xes_bytes
+        except Exception as e:
+            raise Exception(f"Failed to export to XES bytes: {str(e)}")
+
+    def export_to_csv_data(self, df: pd.DataFrame, delimiter: str) -> str:
+        """Export from dataframe to CSV text.
+
+        Parameters
+        ----------
+        df : pd.DataFrame
+            The dataframe to export.
+        delimiter : str
+            The parsed delimiter used in CSV file.
+
+        Returns
+        -------
+        str
+            The CSV file content as text.
+
+        Raises
+        ------
+        InvalidTypeException
+            If df is not a pandas DataFrame.
+        """
+        if not isinstance(df, pd.DataFrame):
+            raise InvalidTypeException("pandas DataFrame", type(df))
+
+        return df.to_csv(sep=delimiter, index=False)
