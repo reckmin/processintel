@@ -107,13 +107,13 @@ class HomeController(BaseController):
         st.session_state.algorithm = algorithm
 
     def set_df(self, delimiter: str):
-        """creates a dataframe from the uploaded file with the given delimiter.
+        """Creates a dataframe from the uploaded file with the given delimiter.
         Stores the dataframe in the session state and changes the routing to the ColumnSelection page.
 
         Parameters
         ----------
         delimiter : str
-            The delimiter to be used for the CSV file.
+            The delimiter to be used for CSV file, ignored for XES file.
         """
         file_type = self.detection_model.detect_file_type(self.uploaded_file)
         if file_type == "csv":

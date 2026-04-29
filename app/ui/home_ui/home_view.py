@@ -101,21 +101,30 @@ class HomeView(BaseView):
                     args=(model, algorithm_mappings[selection]),
                 )
 
-    def display_df_import(self, detected_delimiter):
-        """Displays the dataframe import component. A text input is displayed to enter the delimiter.
+    def display_df_import(self, detected_delimiter: str, show_delimiter: bool = True):
+        """Displays the dataframe import component. A text input is displayed to enter
+        the delimiter.
 
         Parameters
         ----------
         detected_delimiter : str
-            The detected delimiter of the CSV file.
+            The detected delimiter of the CSV file. For file types that do not use a delimeter,
+            an emtpy string is passed.
+        show_delimiter : bool, optional
+            Whether to display the delimiter input field, by default True.
         """
         with self.content_column:
             delimiter_col, _, button_column = st.columns([1, 3, 1])
+            delimiter = ""
 
-            with delimiter_col:
-                delimiter = st.text_input(
-                    "Delimiter", value=detected_delimiter, key="delimiter", max_chars=1
-                )
+            if show_delimiter:
+                with delimiter_col:
+                    delimiter = st.text_input(
+                        "Delimiter",
+                        value=detected_delimiter,
+                        key="delimiter",
+                        max_chars=1,
+                    )
 
             with button_column:
                 st.write("")
