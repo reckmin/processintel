@@ -1,0 +1,78 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<log>
+    <trace>
+        <string key="concept:name" value="case1"/>
+        <event>
+            <string key="concept:name" value="activity1"/>
+            <date key="time:timestamp" value="2023-01-01T10:00:00"/>
+        </event>
+        <event>
+            <string key="concept:name" value="activity2"/>
+            <date key="time:timestamp" value="2023-01-01T11:00:00"/>
+        </event>
+        <event>
+            <string key="concept:name" value="activity4"/>
+            <date key="time:timestamp" value="2023-01-01T12:30:00"/>
+        </event>
+    </trace>
+
+    <trace>
+        <string key="concept:name" value="case2"/>
+        <event>
+            <string key="concept:name" value="activity1"/>
+            <date key="time:timestamp" value="2023-01-02T10:00:00"/>
+        </event>
+        <event>
+            <string key="concept:name" value="activity3"/>
+            <date key="time:timestamp" value="2023-01-02T11:00:00"/>
+        </event>
+        <event>
+            <string key="concept:name" value="activity4"/>
+            <date key="time:timestamp" value="2023-01-02T12:15:00"/>
+        </event>
+    </trace>
+
+    <trace>
+        <string key="concept:name" value="case3"/>
+        <event>
+            <string key="concept:name" value="activity1"/>
+            <date key="time:timestamp" value="2023-01-03T09:30:00"/>
+        </event>
+        <event>
+            <string key="concept:name" value="activity2"/>
+            <date key="time:timestamp" value="2023-01-03T10:45:00"/>
+        </event>
+        <event>
+            <string key="concept:name" value="activity3"/>
+            <date key="time:timestamp" value="2023-01-03T12:00:00"/>
+        </event>
+    </trace>
+
+    <trace>
+        <string key="concept:name" value="case4"/>
+        <event>
+            <string key="concept:name" value="activity2"/>
+            <date key="time:timestamp" value="2023-01-04T08:00:00"/>
+        </event>
+        <event>
+            <string key="concept:name" value="activity3"/>
+            <date key="time:timestamp" value="2023-01-04T09:20:00"/>
+        </event>
+        <event>
+            <string key="concept:name" value="activity5"/>
+            <date key="time:timestamp" value="2023-01-04T10:10:00"/>
+        </event>
+    </trace>
+
+    <trace>
+        <string key="concept:name" value="case5"/>
+        <event>
+            <string key="concept:name" value="activity1"/>
+            <date key="time:timestamp" value="2023-01-05T13:00:00"/>
+        </event>
+        <event>
+            <string key="concept:name" value="activity5"/>
+            <date key="time:timestamp" value="2023-01-05T14:30:00"/>
+        </event>
+    </trace>
+</log>

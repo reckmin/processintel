@@ -1,0 +1,67 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<log xmlns="http://www.xes-standard.org/">
+    <trace>
+        <string key="concept:name" value="case1"/>
+        <event>
+            <string key="concept:name" value="activity1"/>
+        </event>
+        <event>
+            <string key="concept:name" value="activity2"/>
+        </event>
+        <event>
+            <string key="concept:name" value="activity3"/>
+        </event>
+    </trace>
+
+    <trace>
+        <string key="concept:name" value="case2"/>
+        <event>
+            <string key="concept:name" value="activity1"/>
+        </event>
+        <event>
+            <string key="concept:name" value="activity4"/>
+        </event>
+        <event>
+            <string key="concept:name" value="activity5"/>
+        </event>
+    </trace>
+
+    <trace>
+        <string key="concept:name" value="case3"/>
+        <event>
+            <string key="concept:name" value="activity2"/>
+        </event>
+        <event>
+            <string key="concept:name" value="activity3"/>
+        </event>
+        <event>
+            <string key="concept:name" value="activity5"/>
+        </event>
+    </trace>
+
+    <trace>
+        <string key="concept:name" value="case4"/>
+        <event>
+            <string key="concept:name" value="activity1"/>
+        </event>
+        <event>
+            <string key="concept:name" value="activity2"/>
+        </event>
+        <event>
+            <string key="concept:name" value="activity4"/>
+        </event>
+        <event>
+            <string key="concept:name" value="activity6"/>
+        </event>
+    </trace>
+
+    <trace>
+        <string key="concept:name" value="case5"/>
+        <event>
+            <string key="concept:name" value="activity3"/>
+        </event>
+        <event>
+            <string key="concept:name" value="activity6"/>
+        </event>
+    </trace>
+</log>

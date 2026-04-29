@@ -1,0 +1,118 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<log>
+    <trace>
+        <string key="concept:name" value="case1"/>
+        <event>
+            <string key="concept:name" value="activity1"/>
+            <int key="cost" value="100"/>
+            <float key="duration" value="1.5"/>
+            <boolean key="completed" value="true"/>
+        </event>
+        <event>
+            <string key="concept:name" value="activity2"/>
+            <int key="cost" value="150"/>
+            <float key="duration" value="2.0"/>
+            <boolean key="completed" value="true"/>
+        </event>
+        <event>
+            <string key="concept:name" value="activity3"/>
+            <int key="cost" value="80"/>
+            <float key="duration" value="0.75"/>
+            <boolean key="completed" value="false"/>
+        </event>
+    </trace>
+
+    <trace>
+        <string key="concept:name" value="case2"/>
+        <event>
+            <string key="concept:name" value="activity1"/>
+            <int key="cost" value="120"/>
+            <float key="duration" value="1.25"/>
+            <boolean key="completed" value="true"/>
+        </event>
+        <event>
+            <string key="concept:name" value="activity4"/>
+            <int key="cost" value="300"/>
+            <float key="duration" value="4.5"/>
+            <boolean key="completed" value="true"/>
+        </event>
+        <event>
+            <string key="concept:name" value="activity5"/>
+            <int key="cost" value="60"/>
+            <float key="duration" value="0.5"/>
+            <boolean key="completed" value="true"/>
+        </event>
+    </trace>
+
+    <trace>
+        <string key="concept:name" value="case3"/>
+        <event>
+            <string key="concept:name" value="activity2"/>
+            <int key="cost" value="90"/>
+            <float key="duration" value="1.0"/>
+            <boolean key="completed" value="true"/>
+        </event>
+        <event>
+            <string key="concept:name" value="activity3"/>
+            <int key="cost" value="110"/>
+            <float key="duration" value="1.75"/>
+            <boolean key="completed" value="true"/>
+        </event>
+        <event>
+            <string key="concept:name" value="activity6"/>
+            <int key="cost" value="250"/>
+            <float key="duration" value="3.25"/>
+            <boolean key="completed" value="false"/>
+        </event>
+    </trace>
+
+    <trace>
+        <string key="concept:name" value="case4"/>
+        <event>
+            <string key="concept:name" value="activity1"/>
+            <int key="cost" value="130"/>
+            <float key="duration" value="1.4"/>
+            <boolean key="completed" value="true"/>
+        </event>
+        <event>
+            <string key="concept:name" value="activity2"/>
+            <int key="cost" value="170"/>
+            <float key="duration" value="2.3"/>
+            <boolean key="completed" value="true"/>
+        </event>
+        <event>
+            <string key="concept:name" value="activity5"/>
+            <int key="cost" value="95"/>
+            <float key="duration" value="1.1"/>
+            <boolean key="completed" value="true"/>
+        </event>
+        <event>
+            <string key="concept:name" value="activity7"/>
+            <int key="cost" value="400"/>
+            <float key="duration" value="5.0"/>
+            <boolean key="completed" value="false"/>
+        </event>
+    </trace>
+
+    <trace>
+        <string key="concept:name" value="case5"/>
+        <event>
+            <string key="concept:name" value="activity3"/>
+            <int key="cost" value="75"/>
+            <float key="duration" value="0.8"/>
+            <boolean key="completed" value="true"/>
+        </event>
+        <event>
+            <string key="concept:name" value="activity4"/>
+            <int key="cost" value="220"/>
+            <float key="duration" value="3.1"/>
+            <boolean key="completed" value="true"/>
+        </event>
+        <event>
+            <string key="concept:name" value="activity6"/>
+            <int key="cost" value="180"/>
+            <float key="duration" value="2.6"/>
+            <boolean key="completed" value="true"/>
+        </event>
+    </trace>
+</log>

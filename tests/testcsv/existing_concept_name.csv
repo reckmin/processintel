@@ -1,0 +1,6 @@
+case:concept:name,concept:name,time:timestamp,org:group,resource country,organization country,org:resource,organization involved,org:role,impact,product,lifecycle:transition
+1-109135791,Queued,2006-01-11 14:49:42+00:00,Org line A2,INDIA,se,Minnie,J11 2nd,A2_2,High,PROD191,Awaiting Assignment
+1-109135791,Accepted,2012-03-15 10:53:52+00:00,Org line A2,INDIA,se,Minnie,J11 2nd,A2_2,High,PROD191,In Progress
+1-109135791,Accepted,2012-03-15 10:56:17+00:00,Org line A2,INDIA,se,Minnie,J11 2nd,A2_2,High,PROD191,Assigned
+1-109135791,Accepted,2012-03-15 11:09:05+00:00,Org line A2,INDIA,se,Minnie,J11 2nd,A2_2,High,PROD191,In Progress
+1-109135791,Completed,2012-03-15 11:11:33+00:00,Org line A2,INDIA,se,Minnie,J11 2nd,A2_2,High,PROD191,Closed

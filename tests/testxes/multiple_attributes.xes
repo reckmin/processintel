@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<log>
+    <trace>
+        <string key="concept:name" value="case1"/>
+        <string key="customer" value="customer_a"/>
+        <event>
+            <string key="concept:name" value="activity1"/>
+            <date key="time:timestamp" value="2025-01-01T10:00:00+00:00"/>
+            <string key="org:resource" value="user1"/>
+            <string key="lifecycle:transition" value="complete"/>
+            <boolean key="approved" value="false"/>
+        </event>
+        <event>
+            <string key="concept:name" value="activity2"/>
+            <date key="time:timestamp" value="2025-01-01T11:00:00+00:00"/>
+            <string key="org:resource" value="user2"/>
+            <string key="lifecycle:transition" value="complete"/>
+            <boolean key="approved" value="false"/>
+        </event>
+    </trace>
+</log>
