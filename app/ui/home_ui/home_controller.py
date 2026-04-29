@@ -1,5 +1,4 @@
 import streamlit as st
-
 from app.analysis.detection_model import DetectionModel
 from app.exceptions.io_exceptions import (
     UnsupportedFileTypeException,
@@ -74,13 +73,15 @@ class HomeController(BaseController):
             file_type = self.detection_model.detect_file_type(self.uploaded_file)
 
             if file_type == "csv":
-                line = self.import_model.read_line(self.uploaded_file)
-                detected_delimiter = self.detection_model.detect_delimiter(line)
-                self.uploaded_file.seek(0)
+                detected_delimiter = self._determine_delimiter(
+                    self.uploaded_file, "auto"
+                )
                 selected_view.display_df_import(detected_delimiter)
             elif file_type == "pickle":
                 model = self.import_model.read_model(self.uploaded_file)
                 selected_view.display_model_import(model)
+            elif file_type == "xes":
+                selected_view.display_df_import("", False)
             else:
                 raise NotImplementedFileTypeException(file_type)
         except UnsupportedFileTypeException as e:
@@ -114,12 +115,59 @@ class HomeController(BaseController):
         delimiter : str
             The delimiter to be used for the CSV file.
         """
-        if delimiter == "":
-            st.session_state.error = "Please enter a delimiter"
-            # change routing to home
-            st.session_state.page = "Home"
-            return
-        st.session_state.df = self.import_model.read_csv(self.uploaded_file, delimiter)
+        file_type = self.detection_model.detect_file_type(self.uploaded_file)
+        if file_type == "csv":
+            if delimiter == "":
+                st.session_state.error = "Please enter a delimiter"
+                # change routing to home
+                st.session_state.page = "Home"
+                return
+            st.session_state.df = self.import_model.read_csv(
+                self.uploaded_file, delimiter
+            )
+        elif file_type == "xes":
+            try:
+                xes_tree = self.import_model.read_xes(self.uploaded_file)
+                df = self.xes_to_csv_converter.convert(
+                    xes_tree, include_all_attributes=True
+                )
+            except Exception as e:
+                self.logger.exception(e)
+                st.session_state.error = f"Invalid XES file format:{str(e)}"
+                st.session_state.page = "Home"
+                return
+            if df.empty:
+                st.session_state.error = "The XES file contains no event data."
+                st.session_state.page = "Home"
+                return
+
+            st.session_state.df = df
+
+    def _determine_delimiter(self, csv_file, delimiter: str) -> str:
+        """Determine the delimiter for a CSV file.
+        If the delimiter is set to "auto", the method detects the delimiter using the detection_model.
+        If detection fails, return the default "," delimiter. In case delimiter is custom, returns it directly.
+
+        Parameters
+        ----------
+        csv_file : UploadedFile
+            The uploaded CSV file.
+        delimiter : str
+            The delimiter can be either "auto" or determined by user.
+
+        Returns
+        -------
+        str
+            The detected or user provided delimiter.
+        """
+        if delimiter == "auto":
+            try:
+                line = self.import_model.read_line(csv_file)
+                delimiter = self.detection_model.detect_delimiter(line)
+                csv_file.seek(0)
+            except Exception:
+                delimiter = ","
+        return delimiter
 
     def run(self, selected_view, index):
         """Runs the controller for the Home page. This method is called to display the Home page and to react to user input.

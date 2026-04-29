@@ -28,6 +28,7 @@ cluster_seperator = "---"
 # The allowed file extensions for importing data.
 import_file_types_mapping = {
     "csv": [".csv"],
+    "xes": [".xes"],
 }
 # List of all allowed file extensions.
 import_file_suffixes = [
@@ -47,9 +48,11 @@ graph_export_formats = list(map(lambda x: x.upper(), graph_export_mime_types.key
 
 # COLUMN TYPE PREDICTION CONFIGURATIONS
 column_types_predictions_values = {
-    "time": set(["time", "date"]),
-    "event": set(["event", "activity", "action", "task", "operation"]),
-    "case": set(["case", "process", "instance", "session"]),
+    "time": set(["time", "date", "timestamp"]),
+    "event": set(["event", "activity", "action", "task", "operation", "concept:name"]),
+    "case": set(
+        ["case", "process", "instance", "session", "case:concept:name", "case_id"]
+    ),
 }
 
 # ALGORITHM CONFIGURATIONS

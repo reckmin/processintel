@@ -1,20 +1,20 @@
 import base64
+import xml.etree.ElementTree as ET
 import pandas as pd
 import pickle
 from streamlit.runtime.uploaded_file_manager import UploadedFile
-from typing import Union
 
 
 class ImportOperations:
 
     def read_csv(
-        self, filePath: str | UploadedFile, delimiter: str = ","
+        self, file_path: str | UploadedFile, delimiter: str = ","
     ) -> pd.DataFrame:
         """Reads a csv file and returns a pandas DataFrame
 
         Parameters
         ----------
-        filePath : str | UploadedFile
+        file_path : str | UploadedFile
             Path to the csv file or the uploaded file object
         delimiter : str, optional
             The delimiter used in the csv file, by default ","
@@ -24,7 +24,7 @@ class ImportOperations:
         pd.DataFrame
             The csv file as a pandas DataFrame
         """
-        df = pd.read_csv(filePath, delimiter=delimiter)
+        df = pd.read_csv(file_path, delimiter=delimiter, low_memory=False)
         return df
 
     def read_img(self, file_path: str) -> str:
@@ -48,12 +48,12 @@ class ImportOperations:
         png_base64 = base64.b64encode(png).decode("utf-8")
         return png_base64
 
-    def read_model(self, path: str | UploadedFile) -> object:
+    def read_model(self, file_path: str | UploadedFile) -> object:
         """Reads a model from a pickle file and returns the model object
 
         Parameters
         ----------
-        path : str | UploadedFile
+        file_path : str | UploadedFile
             Path to the pickle file or the uploaded file object
 
         Returns
@@ -61,14 +61,14 @@ class ImportOperations:
         object
             The model object
         """
-        if isinstance(path, UploadedFile):
-            model = pickle.load(path)
+        if isinstance(file_path, UploadedFile):
+            model = pickle.load(file_path)
         else:
-            with open(path, "rb") as file:
+            with open(file_path, "rb") as file:
                 model = pickle.load(file)
         return model
 
-    def read_file(self, file_path: Union[str, UploadedFile]) -> str:
+    def read_file(self, file_path: str | UploadedFile) -> str:
         """Reads a file and returns the content as a string. This is used to display the content of the file in the UI
 
         Parameters
@@ -93,12 +93,12 @@ class ImportOperations:
         Parameters
         ----------
         file_path : str
-            Path to the file
+            Path to the file.
 
         Returns
         -------
         bytes
-            The content of the file as bytes
+            The content of the file as bytes.
         """
         with open(file_path, "rb") as file:
             return file.read()
@@ -124,3 +124,23 @@ class ImportOperations:
 
         with open(file_path, "r") as file:
             return file.readline()
+
+    def read_xes(self, file_path: str | UploadedFile) -> ET.ElementTree:
+        """Reads an XES file and returns an ElementTree.
+
+        Parameters
+        ----------
+        file_path : str | UploadedFile
+            Path to the XES file or the uploaded file object.
+
+        Returns
+        -------
+        ET.ElementTree
+            The parsed XES XML tree.
+        """
+
+        if isinstance(file_path, UploadedFile):
+            file_path.seek(0)
+            return ET.parse(file_path)
+
+        return ET.parse(file_path)
