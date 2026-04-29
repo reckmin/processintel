@@ -46,8 +46,7 @@ class HomeView(BaseView):
             st.write(
                 "Welcome to ProcessIntel the transparent open-source application for process mining, event log visualization, and interactive exploration of process models."
             )
-            st.write(
-                """ProcessIntel enables you to:
+            st.write("""ProcessIntel enables you to:
 - import and transform event logs
 - discover process models 
   - by using state-of-the-art process mining algorithms 
@@ -57,8 +56,7 @@ class HomeView(BaseView):
 - export
   - process models
   - your workspace
-  """
-            )
+  """)
 
     def display_file_upload(self, file_types: list[str]):
         """Displays the file upload component.
@@ -136,9 +134,120 @@ class HomeView(BaseView):
                     args=(delimiter,),
                 )
 
+    def display_file_converter(self):
+        """Displays the file converter component."""
+        with self.content_column:
+            st.markdown("##### File Format Converter")
+            st.write(
+                "Convert and download your process log files between different formats (CSV ↔ XES)"
+            )
+        with self.content_column:
+            tab1, tab2 = st.tabs(["CSV to XES", "XES to CSV"])
+            with tab1:
+                self._display_csv_to_xes_converter()
+
+            with tab2:
+                self._display_xes_to_csv_converter()
+
+    def _display_xes_to_csv_converter(self):
+        """Render the XES -> CSV converter UI"""
+        xes_file = st.file_uploader(
+            "Choose XES file",
+            type="xes",
+            accept_multiple_files=False,
+            key="convert_xes",
+        )
+
+        delimiter = st.selectbox(
+            "CSV delimiter",
+            [",", ";", "\t", "|"],
+            key="xes_csv_delimiter",
+            format_func=lambda x: {
+                ",": "Comma (,)",
+                ";": "Semicolon (;)",
+                "\t": "Tab",
+                "|": "Pipe (|)",
+            }[x],
+        )
+
+        include_all_attributes = st.checkbox(
+            "Include all attributes (preserve XES column names)",
+            value=True,
+            key="include_all_attrs",
+            help="Keep all event/case attributes with original XES column names. Recommended for round-trip conversion.",
+        )
+
+        self.controller.handle_xes_to_csv_input_change(
+            xes_file,
+            delimiter,
+            include_all_attributes,
+        )
+
+        if xes_file is not None:
+            if not st.session_state.get("converted_csv_ready", False):
+                if st.button(
+                    "Convert to CSV",
+                    key="convert_xes_to_csv_button",
+                    width="stretch",
+                ):
+                    self.controller.convert_xes_to_csv(
+                        xes_file, delimiter, include_all_attributes
+                    )
+                    if st.session_state.get("converted_csv_ready", False):
+                        st.rerun()
+            else:
+                df = st.session_state.get("converted_csv_df")
+                csv_data = st.session_state.get("converted_csv_data")
+                csv_filename = st.session_state.get("converted_csv_filename")
+
+                st.download_button(
+                    label="Download CSV File",
+                    data=csv_data,
+                    file_name=csv_filename,
+                    mime="text/csv",
+                    key="download_csv_file",
+                    width="stretch",
+                )
+
+                if df is not None:
+                    case_col = (
+                        "case:concept:name"
+                        if "case:concept:name" in df.columns
+                        else "case_id"
+                    )
+                    activity_col = (
+                        "concept:name" if "concept:name" in df.columns else "activity"
+                    )
+                    st.info(
+                        f"Data Summary:\n\n"
+                        f"- Columns: {len(df.columns)}\n"
+                        f"- Cases: {df[case_col].nunique() if case_col in df.columns else 'N/A'}\n"
+                        f"- Activities: {df[activity_col].nunique() if activity_col in df.columns else 'N/A'}\n"
+                        f"- Events: {len(df)}"
+                    )
+
+                    st.subheader("Data Preview")
+                    st.dataframe(df.head(10), width="stretch")
+
+                st.download_button(
+                    label="Download CSV File",
+                    data=csv_data,
+                    file_name=csv_filename,
+                    mime="text/csv",
+                    key="download_csv_file",
+                )
+
+    def _display_csv_to_xes_converter(self):
+        """Render the CSV -> XES converter UI"""
+        csv_file = st.file_uploader(
+            "Choose CSV file",
+            type="csv",
+            accept_multiple_files=False,
+            key="convert_csv",
+        )
+
     def display_disclaimer(self):
-        footer(
-            """<div>
+        footer("""<div>
                 <strong>Disclaimer</strong><br>
                 ProcessIntel is hosted and operated as a service by
                 <a href="https://swisdata.eu" target="_blank">SWISDATA</a>.<br>
@@ -155,5 +264,4 @@ class HomeView(BaseView):
                 <a href="https://www.swisdata.eu/contact/" target="_blank">
                     https://www.swisdata.eu/contact/
                 </a>
-            </div>"""
-        )
+            </div>""")
