@@ -1,10 +1,13 @@
 import os
+import tempfile
 import unittest
 import xml.etree.ElementTree as ET
 
 import pandas as pd
+import pm4py
 
 from app.converters.csv_to_xes_converter import CsvToXesConverter
+from app.io_operations.import_operations import ImportOperations
 
 
 class CsvToXesConversionTest(unittest.TestCase):
@@ -155,6 +158,106 @@ class CsvToXesConversionTest(unittest.TestCase):
                 timestamp_col="Case ID",
             )
         self.assertIn("Please select three different columns", str(context.exception))
+
+    def test_csv_to_xes_conversion_compare_to_pm4py_conversion(self):
+        """Test CSV to XES conversion correctness comparing to pm4py library conversion."""
+        csv_path = os.path.join(self.test_csv_dir, "test_csv.csv")
+        with open(csv_path, "r", encoding="utf-8") as csv_file:
+            df = pd.read_csv(csv_file, delimiter=",")
+
+        xes_tree, summary, dropped_rows = self.csv_to_xes_converter.convert(
+            df,
+            case_id_col="case",
+            activity_col="event",
+            timestamp_col="timestamp",
+        )
+
+        pm4py_xes_tree = self._convert_using_pm4py(df)
+
+        self.assertEqual(
+            self._get_trace_case_ids(xes_tree),
+            self._get_trace_case_ids(pm4py_xes_tree),
+        )
+        self.assertEqual(
+            self._get_event_attribute_values(xes_tree, "concept:name"),
+            self._get_event_attribute_values(pm4py_xes_tree, "concept:name"),
+        )
+        self.assertEqual(
+            self._get_formatted_timestamps(xes_tree),
+            self._get_formatted_timestamps(pm4py_xes_tree),
+        )
+        self.assertEqual(
+            self._count_events(xes_tree), self._count_events(pm4py_xes_tree)
+        )
+
+    def _convert_using_pm4py(self, df: pd.DataFrame) -> ET.ElementTree:
+        """Convert Dataframe to XES event log using pm4py library.
+
+        Parameters
+        ----------
+        df : pd.DataFrame
+            The parsed dataframe.
+
+        Returns
+        -------
+        ET.ElementTree
+            The converted XES element tree.
+        """
+        pm4py_df = pm4py.format_dataframe(
+            df,
+            case_id="case",
+            activity_key="event",
+            timestamp_key="timestamp",
+        )
+        event_log = pm4py.convert_to_event_log(pm4py_df)
+
+        with tempfile.TemporaryDirectory() as temp_dir:
+            pm4py_xes_path = os.path.join(temp_dir, "exported.xes")
+            pm4py.write_xes(event_log, pm4py_xes_path)
+            import_model = ImportOperations()
+            pm4py_xes_tree = import_model.read_xes(pm4py_xes_path)
+
+            return pm4py_xes_tree
+
+    def _get_formatted_timestamps(self, xes_tree: ET.ElementTree) -> list[str]:
+        """Return formatted timestamp values from element tree.
+
+        Parameters
+        ----------
+        xes_tree : ET.ElementTree
+            Parsed ElementTree.
+
+        Returns
+        -------
+        list[str]
+            Normalized timestamp values.
+        """
+        timestmaps = self._get_event_attribute_values(xes_tree, "time:timestamp")
+
+        return [
+            pd.to_datetime(timestamp, utc=True).isoformat() for timestamp in timestmaps
+        ]
+
+    def _count_events(self, xes_tree: ET.ElementTree) -> int:
+        """Count all events in XES tree.
+
+        Parameters
+        ----------
+        xes_tree : ET.ElementTree
+            The parsed element tree.
+
+        Returns
+        -------
+        int
+            Number of event elements.
+        """
+        root = xes_tree.getroot()
+        event_count = 0
+        for elem in root.iter():
+            if elem.tag.endswith("event"):
+                event_count += 1
+
+        return event_count
 
     def _get_trace_case_ids(self, xes_tree: ET.ElementTree) -> list[str]:
         """Get case IDs from trace-level concept:name attributes.
