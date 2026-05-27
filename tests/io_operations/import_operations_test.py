@@ -1,3 +1,4 @@
+import tempfile
 import unittest
 import os
 import xml.etree.ElementTree as ET
@@ -36,12 +37,13 @@ class TestImportOperations(unittest.TestCase):
         <string key="concept:name" value="case1">
     </trace>
 </log>"""
-        invalid_xes_path = os.path.join(self.test_xes_dir, "invalid.xes")
-        with open(invalid_xes_path, "w", encoding="utf-8") as xes_file:
-            xes_file.write(invalid_xes_content)
+        with tempfile.TemporaryDirectory() as temp_dir:
+            invalid_xes_path = os.path.join(temp_dir, "invalid.xes")
+            with open(invalid_xes_path, "w", encoding="utf-8") as xes_file:
+                xes_file.write(invalid_xes_content)
 
-        with self.assertRaises(ET.ParseError):
-            self.importer.read_xes(invalid_xes_path)
+            with self.assertRaises(ET.ParseError):
+                self.importer.read_xes(invalid_xes_path)
 
 
 if __name__ == "__main__":
